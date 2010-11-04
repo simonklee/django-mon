@@ -5,7 +5,7 @@ try:
 except ImportError:
     from django.utils.simplejson import JSONEncoder
 
-from apps.mon.models import Record
+from mon.models import Record
 
 
 def mon_router(request, pattern, *args, **kwargs):

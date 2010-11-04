@@ -10,8 +10,8 @@ setup(
     author='Simon Zimmermann',
     author_email='simonz05@gmail.com',
     url='http://github.com/simonz05/django-mon',
-    install_requires=[],
     license='GPL',
+    install_requires=['pip'],
     classifiers=[
         'Development Status :: 1 - Beta',
         'Environment :: Web Environment',

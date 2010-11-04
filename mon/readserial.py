@@ -20,7 +20,7 @@ from django.core.management import setup_environ
 from monitor import settings
 setup_environ(settings)
 
-from monitor.apps.mon.models import Record
+from monitor.mon.models import Record
 
 EOF = ';'
 LF = '\n'
