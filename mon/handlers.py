@@ -1,7 +1,32 @@
+import datetime
+import calendar
+
 from django.http import HttpResponse
 from piston.handler import BaseHandler
 
 from mon.models import Record
+
+
+def create_date(dates, end=False):
+    l = len(dates)
+    d = list(dates)
+
+    if l == 1:
+        d.extend((1, 1) if not end else (12, 31))
+    elif l == 2:
+       d.append(1 if not end else calendar.monthrange(d[0], d[1])[1])
+
+    return datetime.date(*d)
+
+def interpret_dates(from_date, to_date=None):
+    f_d = create_date(from_date)
+
+    if not to_date:
+        t_d = create_date(from_date, end=True)
+    else:
+        t_d = create_date(to_date, end=True)
+
+    return (f_d, t_d)
 
 class MonHandler(BaseHandler):
     allowed_methods = ('GET',)
@@ -9,34 +34,19 @@ class MonHandler(BaseHandler):
     fields = Record.data_fields()
 
     def read(self, request, pattern=None):
+
         if not pattern:
-            return Record.objects.values(self.fields)
+            return Record.objects.values(*self.fields)
 
-        items = pattern.split('/')
-        words = (f.lower() for f in items if f.isalpha())
-        digits = (o for o in items if o.isdigit())
-
+        words = (f.lower() for f in pattern.split('/') if f.isalpha())
         fields = [f for f in words if f in self.fields]
 
-        dates = {
-            'year': None,
-            'month': None,
-            'day': None
-        }
+        digits = [[int(o) for o in v.split('/') if o.isdigit()] for v in pattern.split('-') if len(v) > 0]
 
-        for p in digits:
-            l = len(p)
-            num = int(p)
-            if l is 4:
-                dates['year'] = num
-            elif not dates['month'] and l < 13:
-                dates['month'] = num
-            else:
-                dates['day'] = num
-
-        for k, v in dates.items():
-            if v:
-                dates['created__%s' % k] = v
-            del dates[k]
+        dates = dict()
+        if len(digits) > 0:
+            dates['created__range'] = interpret_dates(*digits[:len(digits)])
 
         return Record.objects.values(*fields).filter(**dates)
+
+
