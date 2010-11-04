@@ -10,7 +10,7 @@ class MonHandler(BaseHandler):
 
     def read(self, request, pattern=None):
         if not pattern:
-            return Record.objects.all()
+            return Record.objects.values(self.fields)
 
         items = pattern.split('/')
         words = (f.lower() for f in items if f.isalpha())
