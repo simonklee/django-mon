@@ -23,6 +23,8 @@ def interpret_dates(from_date, to_date=None):
 
     if not to_date:
         t_d = create_date(from_date, end=True)
+        if t_d == f_d:
+            t_d = t_d + datetime.timedelta(days=1)
     else:
         t_d = create_date(to_date, end=True)
 
@@ -46,7 +48,6 @@ class MonHandler(BaseHandler):
         dates = dict()
         if len(digits) > 0:
             dates['created__range'] = interpret_dates(*digits[:len(digits)])
-
         return Record.objects.values(*fields).filter(**dates)
 
 
