@@ -40,14 +40,13 @@ class MonHandler(BaseHandler):
         if not pattern:
             return Record.objects.values(*self.fields)
 
-        words = (f.lower() for f in pattern.split('/') if f.isalpha())
-        fields = [f for f in words if f in self.fields]
+        words = [f.lower() for f in pattern.split('/') if f.isalpha()]
+        fields = [f for f in words if f in self.fields] if len(words) > 0 else self.fields
 
         digits = [[int(o) for o in v.split('/') if o.isdigit()] for v in pattern.split('-') if len(v) > 0]
 
         dates = dict()
-        if len(digits) > 0:
+        if len(digits[0]) > 0:
             dates['created__range'] = interpret_dates(*digits[:len(digits)])
+
         return Record.objects.values(*fields).filter(**dates)
-
-
