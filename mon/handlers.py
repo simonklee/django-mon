@@ -30,15 +30,18 @@ def interpret_dates(from_date, to_date=None):
 
     return (f_d, t_d)
 
+def query(fields, dates={}):
+    dates.update(dict([('%s__isnull' % f, False) for f in fields]))
+    return Record.objects.values(*fields).filter(**dates)
+
 class MonHandler(BaseHandler):
     allowed_methods = ('GET',)
     model = Record
     fields = Record.data_fields()
 
     def read(self, request, pattern=None):
-
         if not pattern:
-            return Record.objects.values(*self.fields)
+            return query(self.fields)
 
         words = [f.lower() for f in pattern.split('/') if f.isalpha()]
         fields = [f for f in words if f in self.fields] if len(words) > 0 else self.fields
@@ -49,4 +52,4 @@ class MonHandler(BaseHandler):
         if len(digits[0]) > 0:
             dates['created__range'] = interpret_dates(*digits[:len(digits)])
 
-        return Record.objects.values(*fields).filter(**dates)
+        return query(fields, dates)
